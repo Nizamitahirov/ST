@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+<title>HR Operations & HR Systems — Bir Ecosystem</title>
+<!-- HAL Matex — Bir's own font from bir.az CDN -->
+<link rel="stylesheet" href="https://bir.az/css/font/stylesheet.css">
+<style>
+/* ══════════════════════════════════
+   BIR ECOSYSTEM DESIGN TOKENS
+   Source: bir.az/css/style.css?v=43
+══════════════════════════════════ */
+:root {
+  --red:        #E8001C;
+  --red-dark:   #C0001A;
+  --red-light:  #FFF1F2;
+  --text:       #1A1A1A;
+  --text-2:     #555555;
+  --text-3:     #999999;
+  --border:     #E5E5E5;
+  --bg:         #F5F5F5;
+  --white:      #FFFFFF;
+  --green:      #0D8A4E;
+  --amber:      #C47B00;
+  --blue:       #1A56D6;
+  --font:       'HAL Matex', 'Inter', sans-serif;
+  --radius-sm:  8px;
+  --radius-md:  16px;
+  --radius-lg:  24px;
+  --lmd:        1280px;   /* container-fluid--lmd */
+}
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ══════════════════════════════════
+   SLIDE ENGINE
+══════════════════════════════════ */
+.slides-wrapper { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+
+.slide {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  background: var(--bg);
+  opacity: 0; visibility: hidden;
+  transition: transform .55s cubic-bezier(.65,0,.35,1), opacity .5s ease;
+  pointer-events: none; overflow-y: auto;
+  z-index: 1;
+}
+.slide.active {
+  opacity: 1; visibility: visible;
+  pointer-events: all; z-index: 2;
+  transform: translateX(0) !important;
+}
+.slide.ai-r { transform: translateX(5%);  opacity: 0; visibility: visible; transition: none !important; z-index: 2; }
+.slide.ai-l { transform: translateX(-5%); opacity: 0; visibility: visible; transition: none !important; z-index: 2; }
+.slide.ao-l { transform: translateX(-5%); opacity: 0; visibility: visible; pointer-events: none; z-index: 1; }
+.slide.ao-r { transform: translateX(5%);  opacity: 0; visibility: visible; pointer-events: none; z-index: 1; }
+
+/* inner layout — matches container-fluid--lmd */
+.slide-body {
+  width: 100%; max-width: 100%;
+  margin: 0 auto;
+  padding: 72px 72px 36px;
+  height: 100vh;
+  display: flex; flex-direction: column; justify-content: center;
+  box-sizing: border-box;
+}
+
+/* fade-up animation */
+.fu { opacity: 0; transform: translateY(14px); transition: opacity .45s ease, transform .45s ease; }
+.slide.active .fu                { opacity: 1; transform: none; }
+.slide.active .fu:nth-child(1)   { transition-delay: .06s; }
+.slide.active .fu:nth-child(2)   { transition-delay: .13s; }
+.slide.active .fu:nth-child(3)   { transition-delay: .20s; }
+.slide.active .fu:nth-child(4)   { transition-delay: .27s; }
+
+/* ══════════════════════════════════
+   NAV BAR  — bir.az top nav style
+══════════════════════════════════ */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 60px;
+  background: var(--white); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px; z-index: 1000;
+}
+.nav-logo {
+  font-family: var(--font); font-weight: 700; font-size: 22px;
+  letter-spacing: -.5px; color: var(--text); line-height: 1;
+  text-decoration: none;
+}
+.nav-logo span { color: var(--red); }
+.nav-dots { display: flex; gap: 4px; }
+.nav-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border); cursor: pointer; transition: all .25s;
+}
+.nav-dot.on { background: var(--red); transform: scale(1.6); }
+.nav-ctr { font-size: 12px; color: var(--text-3); font-weight: 500; letter-spacing: 2px; }
+
+/* arrow buttons */
+.arr {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--white); border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: var(--text); cursor: pointer;
+  z-index: 999; transition: all .2s; box-shadow: 0 2px 12px rgba(0,0,0,.07);
+}
+.arr:hover { background: var(--red); border-color: var(--red); color: #fff; box-shadow: 0 4px 20px rgba(232,0,28,.22); }
+.arr.l { left: 12px; }
+.arr.r { right: 12px; }
+.arr:disabled { opacity: .2; cursor: default; pointer-events: none; }
+.progress { position: fixed; bottom: 0; left: 0; height: 3px; background: var(--red); transition: width .4s ease; z-index: 1000; }
+
+/* ══════════════════════════════════
+   SHARED SECTION ELEMENTS
+   mirrors .salary-hero & .salary-tab style
+══════════════════════════════════ */
+.section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--red);
+  display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.section-title {
+  font-size: clamp(26px, 3vw, 44px); font-weight: 700;
+  color: var(--text); letter-spacing: -.5px; line-height: 1.1;
+  margin-bottom: 28px;
+}
+.section-title .r { color: var(--red); }
+
+/* card — mirrors salary-tab list items */
+.bir-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-md); transition: all .2s;
+}
+.bir-card:hover {
+  border-color: rgba(232,0,28,.3);
+  box-shadow: 0 6px 24px rgba(0,0,0,.06);
+  transform: translateY(-2px);
+}
+/* tag pill */
+.bir-tag {
+  display: inline-block; padding: 4px 12px;
+  background: var(--red-light); border-radius: 100px;
+  font-size: 10px; font-weight: 700; color: var(--red);
+  letter-spacing: .5px; text-transform: uppercase;
+}
+
+/* ══════════════════════════════════
+   SLIDE 1 — COVER
+   Mirrors .salary-hero layout exactly
+══════════════════════════════════ */
+#s1 {
+  background: var(--white); overflow: hidden; padding: 0;
+}
+/* reuse salary-hero's split layout */
+.salary-hero {
+  display: flex; align-items: stretch;
+  width: 100%; height: 100%;
+}
+.salary-hero__desc {
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: center; padding: 80px 72px;
+  position: relative; z-index: 2; max-width: 58%;
+}
+.salary-hero__img {
+  flex: 0 0 42%; background: var(--red);
+  position: relative; overflow: hidden;
+  clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%);
+}
+.salary-hero__img-dots {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,.18) 1.5px, transparent 1.5px);
+  background-size: 30px 30px;
+}
+.salary-hero__img-wordmark {
+  position: absolute; bottom: 52px; right: 52px;
+  font-family: var(--font); font-size: 56px; font-weight: 700;
+  color: rgba(255,255,255,.12); letter-spacing: -2px; line-height: 1;
+}
+.cover-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 16px; background: var(--red-light); border-radius: 100px;
+  margin-bottom: 28px; font-size: 11px; font-weight: 700;
+  color: var(--red); letter-spacing: 2px; text-transform: uppercase;
+}
+.cover-pill::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+.cover-h1 {
+  font-size: clamp(42px, 6vw, 82px); font-weight: 700;
+  line-height: .93; letter-spacing: -3px;
+  color: var(--text); margin-bottom: 22px;
+}
+.cover-h1 em { font-style: normal; color: var(--red); display: block; }
+.cover-sub {
+  font-size: 16px; color: var(--text-2); line-height: 1.65;
+  margin-bottom: 36px; max-width: 460px;
+}
+.cover-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 40px; }
+.chip {
+  padding: 8px 18px; border: 1.5px solid var(--border);
+  border-radius: 100px; font-size: 12px; font-weight: 500;
+  color: var(--text-2); background: var(--white); font-family: var(--font);
+}
+.chip.r { background: var(--red-light); border-color: rgba(232,0,28,.25); color: var(--red); }
+.cover-footer {
+  font-size: 13px; color: var(--text-3);
+  border-top: 1px solid var(--border); padding-top: 20px;
+}
+
+/* ══════════════════════════════════
+   STANDARD CONTENT SLIDES
+   Mirrors .salary-tab content style
+══════════════════════════════════ */
+.slide-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.slide-3col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.slide-4col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+
+/* ── salary-tab__list style ── */
+.bir-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.bir-list li {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 14px; color: var(--text-2);
+  transition: all .2s;
+}
+.bir-list li:hover { border-color: rgba(232,0,28,.3); background: var(--red-light); color: var(--text); }
+.bir-list li::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+
+/* ── Ecosystem diagram boxes ── */
+.eco-block {
+  padding: 14px 20px; border-radius: var(--radius-sm); border: 1.5px solid;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 14px; font-weight: 700;
+}
+.eco-block.b1 { background: #FFF1F2; border-color: rgba(232,0,28,.3); color: var(--red); }
+.eco-block.b2 { background: #FFF8EB; border-color: rgba(196,123,0,.3); color: var(--amber); }
+.eco-block.b3 { background: #EDFAF3; border-color: rgba(13,138,78,.3); color: var(--green); }
+.eco-sep { text-align: center; font-size: 10px; color: var(--text-3); letter-spacing: 2px; text-transform: uppercase; padding: 6px 0; }
+.eco-sub { font-size: 10px; font-weight: 400; opacity: .65; letter-spacing: 1px; text-transform: uppercase; }
+
+/* ── Current state problems ── */
+.cs-problems { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cs-problem {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; background: var(--red-light);
+  border: 1px solid rgba(232,0,28,.12); border-radius: var(--radius-sm);
+  font-size: 13px; color: var(--text);
+}
+.cs-problem::before { content: '⚠'; color: var(--red); flex-shrink: 0; }
+.no-conn {
+  text-align: center; font-size: 11px; color: var(--text-3);
+  letter-spacing: 2px; padding: 12px 0; text-transform: uppercase;
+  border-top: 1px dashed var(--border); border-bottom: 1px dashed var(--border);
+  margin-bottom: 16px;
+}
+
+/* ── Global model org tree ── */
+.gm-top {
+  background: var(--red); color: #fff;
+  padding: 22px 72px; border-radius: 16px;
+  font-weight: 700; font-size: 20px; letter-spacing: 0.5px;
+  box-shadow: 0 6px 28px rgba(232,0,28,.22);
+}
+.gm-vline { width: 2px; height: 26px; background: var(--border); }
+.gm-hbar { width: 85%; height: 2px; background: var(--border); position: relative; margin: 0 auto; }
+.gm-hbar::before, .gm-hbar::after, .gm-hbar-mid {
+  content: ''; position: absolute; top: 0; width: 2px; height: 26px; background: var(--border);
+}
+.gm-hbar::before { left: 0; } .gm-hbar::after { right: 0; }
+.gm-hbar-mid { left: 50%; transform: translateX(-50%); }
+.gm-child {
+  padding: 24px 18px; text-align: center; transition: all .2s;
+}
+.gm-child:hover { border-color: var(--red); box-shadow: 0 4px 20px rgba(232,0,28,.1); }
+.gm-child-t { font-weight: 700; font-size: 15px; color: var(--red); margin-bottom: 8px; }
+.gm-child-d { font-size: 13px; color: var(--text-2); line-height: 1.55; }
+
+/* ── Org chart ── */
+.org-head {
+  background: var(--red); color: #fff;
+  padding: 28px 80px; border-radius: 18px; text-align: center;
+  font-weight: 700; font-size: 20px; line-height: 1.4; max-width: 640px; width: 100%;
+  box-shadow: 0 8px 36px rgba(232,0,28,.25);
+}
+.org-head-sub { font-size: 12px; opacity: .75; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 8px; }
+.org-child {
+  position: relative; padding: 32px 20px 28px; text-align: center;
+  cursor: pointer; transition: all .25s; overflow: visible;
+}
+.org-child:hover { border-color: var(--red); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(232,0,28,.1); }
+.org-child-icon { font-size: 44px; margin-bottom: 14px; display: block; }
+.org-child-name { font-weight: 700; font-size: 17px; color: var(--text); margin-bottom: 10px; }
+.org-child-sub  { font-size: 13px; color: var(--text-3); line-height: 1.45; }
+.org-tooltip { display: none; }
+/* org tooltips also use #global-tip via JS */
+
+/* ── Accordion ── */
+.acc { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.acc-item {
+  border: 1.5px solid var(--border); border-radius: 12px;
+  overflow: hidden; transition: border-color .2s; background: var(--white);
+}
+.acc-item.on { border-color: var(--red); }
+.acc-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; cursor: pointer; transition: background .2s;
+}
+.acc-head:hover, .acc-item.on .acc-head { background: var(--red-light); }
+.acc-title { font-weight: 700; font-size: 14px; color: var(--text); display: flex; align-items: center; gap: 12px; }
+.acc-chevron {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--bg); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: var(--red); transition: transform .3s; flex-shrink: 0;
+}
+.acc-item.on .acc-chevron { transform: rotate(180deg); }
+.acc-body { max-height: 0; overflow: hidden; transition: max-height .35s ease; background: var(--bg); }
+.acc-item.on .acc-body { max-height: 200px; }
+.acc-inner { padding: 14px 20px; display: flex; gap: 8px; flex-wrap: wrap; }
+.acc-tag {
+  padding: 5px 13px; background: var(--white);
+  border: 1px solid var(--border); border-radius: 100px;
+  font-size: 12px; font-weight: 500; color: var(--text-2);
+}
+
+/* ── HRIS Cards ── */
+.hris-card {
+  padding: 32px 26px; transition: all .25s; position: relative; overflow: hidden;
+}
+.hris-card::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--red); transform: scaleX(0); transition: transform .3s; transform-origin: left;
+}
+.hris-card:hover::after { transform: scaleX(1); }
+.hris-card:hover { border-color: rgba(232,0,28,.3); transform: translateY(-4px); box-shadow: 0 10px 32px rgba(0,0,0,.07); }
+.hris-card-icon { font-size: 40px; margin-bottom: 14px; display: block; }
+.hris-card-title { font-weight: 700; font-size: 17px; color: var(--red); margin-bottom: 18px; }
+.hris-card-list { list-style: none; }
+.hris-card-list li { font-size: 14px; color: var(--text-2); padding: 9px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.hris-card-list li:last-child { border-bottom: none; }
+.hris-card-list li::before { content: '→'; color: var(--red); font-size: 11px; flex-shrink: 0; }
+
+/* ── System landscape pillars ── */
+.sys-badge {
+  padding: 5px 14px; border-radius: 100px; font-size: 10px;
+  font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 10px; border: 1px solid; text-align: center;
+}
+.sys-badge.r { background: var(--red-light); color: var(--red); border-color: rgba(232,0,28,.2); }
+.sys-badge.a { background: #FFF8EB; color: var(--amber); border-color: rgba(196,123,0,.2); }
+.sys-badge.b { background: #EFF6FF; color: var(--blue); border-color: rgba(26,86,214,.2); }
+.sys-node {
+  width: 100%; padding: 20px 18px; border-radius: 14px; border: 1.5px solid;
+  font-weight: 700; font-size: 15px; text-align: center;
+  cursor: pointer; position: relative; transition: all .2s;
+  overflow: visible;
+}
+.sys-node:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+.sys-node.r { background: var(--red-light); border-color: rgba(232,0,28,.3); color: var(--red); }
+.sys-node.a { background: #FFF8EB; border-color: rgba(196,123,0,.25); color: var(--amber); }
+.sys-node.b { background: #EFF6FF; border-color: rgba(26,86,214,.2); color: var(--blue); }
+/* sys-popup: hidden by default, shown via JS as fixed overlay */
+.sys-popup { display: none; }
+/* global tooltip element */
+#global-tip {
+  position: fixed; z-index: 99999; pointer-events: none;
+  background: #1A1A1A; color: #fff; font-size: 12px; font-weight: 400;
+  line-height: 1.55; padding: 10px 14px; border-radius: 10px;
+  width: 200px; text-align: center;
+  box-shadow: 0 4px 24px rgba(0,0,0,.22);
+  opacity: 0; transition: opacity .15s ease;
+  font-family: 'HAL Matex', 'Inter', sans-serif;
+}
+#global-tip.show { opacity: 1; }
+.sys-vline { width: 2px; height: 18px; background: var(--border); margin: 0 auto; }
+.sys-leaves { display: flex; gap: 8px; width: 100%; }
+.sys-leaf {
+  flex: 1; padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border);
+  font-size: 12px; font-weight: 600; color: var(--text-2); text-align: center;
+  background: var(--white); cursor: pointer; transition: all .2s; position: relative;
+  overflow: visible;
+}
+.sys-leaf:hover { border-color: rgba(232,0,28,.3); color: var(--red); }
+
+/* ── Governance ── */
+.gov-node { width: 100%; padding: 20px 32px; border-radius: 14px; text-align: center; }
+.gov-node.t { background: var(--red); color: #fff; box-shadow: 0 4px 24px rgba(232,0,28,.2); }
+.gov-node.m { background: var(--red-light); border: 1.5px solid rgba(232,0,28,.22); }
+.gov-node.b { background: var(--white); border: 1.5px solid var(--border); }
+.gov-node-t { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.gov-node-t.r { color: var(--red); }
+.gov-node-s { font-size: 11px; opacity: .6; text-transform: uppercase; letter-spacing: 1.5px; }
+.gov-arr { display: flex; flex-direction: column; align-items: center; color: var(--red); padding: 4px 0; }
+.gov-arr-line { width: 2px; height: 18px; background: rgba(232,0,28,.25); }
+.gov-desc {
+  margin-top: 26px; text-align: center; font-size: 13px; color: var(--text-2);
+  line-height: 1.7; border-top: 1px solid var(--border); padding-top: 22px; max-width: 520px;
+}
+
+/* ── Roadmap ── */
+.roadmap-wrap { width: 100%; position: relative; padding: 44px 0 16px; }
+.roadmap-line { position: absolute; top: 28px; left: 3%; right: 3%; height: 3px; background: var(--border); border-radius: 3px; }
+.roadmap-fill { height: 100%; width: 100%; background: linear-gradient(90deg, var(--red), rgba(232,0,28,.15)); border-radius: 3px; }
+.roadmap-dot { width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid var(--red); background: var(--white); position: absolute; top: 22px; box-shadow: 0 0 0 4px rgba(232,0,28,.08); }
+.roadmap-phases { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; position: relative; z-index: 2; }
+.rp { display: flex; flex-direction: column; align-items: center; opacity: 0; transform: translateY(14px); transition: all .5s ease; }
+.rp.v { opacity: 1; transform: none; }
+.rp:nth-child(1) .roadmap-dot { left: calc(12.5% - 8px); }
+.rp:nth-child(2) .roadmap-dot { left: calc(37.5% - 8px); }
+.rp:nth-child(3) .roadmap-dot { left: calc(62.5% - 8px); }
+.rp:nth-child(4) .roadmap-dot { left: calc(87.5% - 8px); }
+.rp-card {
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: 16px; padding: 28px 20px; text-align: center;
+  width: 100%; margin-top: 20px; transition: all .25s;
+}
+.rp-card:hover { border-color: var(--red); box-shadow: 0 6px 20px rgba(232,0,28,.1); }
+.rp-num { font-size: 10px; font-weight: 700; color: var(--red); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+.rp-title { font-weight: 700; font-size: 15px; color: var(--text); margin-bottom: 8px; line-height: 1.3; }
+.rp-desc { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+
+/* ── Benefits ── */
+.benefit-item {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 24px 22px; transition: all .2s;
+}
+.benefit-item:hover { border-color: var(--red); box-shadow: 0 4px 18px rgba(232,0,28,.08); }
+.benefit-check {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--red-light); border: 1.5px solid rgba(232,0,28,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--red); flex-shrink: 0; margin-top: 2px;
+}
+.benefit-t { font-weight: 700; font-size: 15px; color: var(--text); margin-bottom: 6px; }
+.benefit-s { font-size: 13px; color: var(--text-3); line-height: 1.45; }
+
+/* ── Evidence cards ── */
+.ev-card {
+  position: relative; overflow: hidden; transition: all .25s;
+}
+.ev-card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: var(--red); transform: scaleX(0); transition: transform .3s; transform-origin: left;
+}
+.ev-card:hover::after { transform: scaleX(1); }
+.ev-card:hover { border-color: rgba(232,0,28,.25); box-shadow: 0 4px 18px rgba(0,0,0,.06); transform: translateY(-2px); }
+.ev-logo {
+  width: 34px; height: 34px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; flex-shrink: 0; border: 1px solid var(--border);
+}
+.ev-name { font-weight: 700; font-size: 14px; color: var(--text); line-height: 1.2; }
+.ev-region { font-size: 10px; color: var(--text-3); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+.ev-body { font-size: 12.5px; color: var(--text-2); line-height: 1.65; margin-bottom: 12px; }
+.ev-body strong { color: var(--text); }
+
+/* ── Literature ── */
+.lit-card {
+  padding: 18px 20px; border-left: 3px solid var(--red); transition: all .2s;
+}
+.lit-card:hover { border-color: rgba(232,0,28,.35); box-shadow: 0 4px 16px rgba(0,0,0,.05); }
+.lit-src { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--red); font-weight: 700; margin-bottom: 10px; }
+.lit-q { font-size: 13px; color: var(--text-2); line-height: 1.7; font-style: italic; margin-bottom: 10px; }
+.lit-ref { font-size: 11px; color: var(--text-3); }
+
+/* ── Scope table ── */
+.scope-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+.scope-table th { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-3); padding: 8px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+.scope-table td { padding: 11px 14px; font-size: 12px; color: var(--text-2); background: var(--white); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); vertical-align: middle; }
+.scope-table td:first-child { border-left: 2px solid var(--red); border-radius: 8px 0 0 8px; font-weight: 700; color: var(--text); }
+.scope-table td:last-child { border-right: 1px solid var(--border); border-radius: 0 8px 8px 0; }
+.sc-y { color: var(--green); font-weight: 600; }
+.sc-n { color: var(--border); }
+.sc-p { color: var(--amber); font-weight: 600; }
+.scope-note { margin-top: 14px; padding: 13px 18px; background: var(--red-light); border: 1px solid rgba(232,0,28,.18); border-radius: 10px; font-size: 13px; color: var(--text); line-height: 1.6; text-align: center; }
+.scope-note strong { color: var(--red); }
+
+/* ── Pros/cons ── */
+.pc-col { padding: 20px 18px; border-radius: 14px; border: 1.5px solid; }
+.pc-col.pro { background: #EDFAF3; border-color: rgba(13,138,78,.2); }
+.pc-col.con { background: #FFF1F2; border-color: rgba(232,0,28,.15); }
+.pc-head { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.pc-head.pro { color: var(--green); } .pc-head.con { color: var(--red); }
+.pc-badge { margin-left: auto; padding: 3px 10px; border-radius: 100px; font-size: 10px; font-weight: 700; border: 1px solid; }
+.pc-badge.pro { background: rgba(13,138,78,.1); color: var(--green); border-color: rgba(13,138,78,.2); }
+.pc-badge.con { background: rgba(232,0,28,.07); color: var(--red); border-color: rgba(232,0,28,.2); }
+.pc-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 12px; color: var(--text-2); line-height: 1.55; }
+.pc-score { flex-shrink: 0; font-weight: 700; font-size: 12px; }
+.pc-score.pro { color: var(--green); } .pc-score.con { color: var(--red); }
+.score-box { background: var(--white); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px 20px; }
+.score-bar-bg { height: 8px; background: var(--bg); border-radius: 100px; overflow: hidden; margin: 8px 0; }
+.score-bar-fill { height: 100%; width: 70%; background: linear-gradient(90deg, var(--green), #22c55e); border-radius: 100px; }
+.score-verdict { text-align: center; font-size: 12px; color: var(--text-2); font-style: italic; }
+.score-verdict strong { color: var(--green); }
+
+/* ══════════════════════════════════
+   SLIDE 16 — Q&A
+   Mirrors .salary-cta section exactly
+══════════════════════════════════ */
+#s16 { background: var(--white); padding: 0; overflow: hidden; }
+.salary-cta {
+  width: 100%; height: 100%;
+  display: flex; align-items: stretch;
+}
+.salary-cta__left {
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: center; padding: 80px 72px;
+  position: relative; z-index: 2;
+}
+.salary-cta__right {
+  width: 42%; background: var(--red); flex-shrink: 0;
+  clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%);
+  position: relative; overflow: hidden;
+}
+.salary-cta__right-dots {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,.15) 1.5px, transparent 1.5px);
+  background-size: 28px 28px;
+}
+.salary-cta__right-mark {
+  position: absolute; bottom: 52px; right: 52px;
+  font-family: var(--font); font-size: 56px; font-weight: 700;
+  color: rgba(255,255,255,.12); letter-spacing: -2px; line-height: 1;
+}
+.cta-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-bottom: 20px; }
+.cta-h2 { font-size: clamp(48px, 7vw, 90px); font-weight: 700; line-height: .92; letter-spacing: -3px; color: var(--text); margin-bottom: 22px; }
+.cta-h2 em { font-style: normal; color: var(--red); display: block; }
+.cta-sub { font-size: 16px; color: var(--text-2); margin-bottom: 40px; font-weight: 400; }
+.cta-logo { font-family: var(--font); font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -.5px; }
+.cta-logo span { color: var(--red); }
+
+/* ══════════════════════════════════
+   COVER HERO — DECORATIVE RIGHT PANEL
+══════════════════════════════════ */
+.hero-stats-grid {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  z-index: 3; width: 76%;
+}
+.hero-stat {
+  background: rgba(255,255,255,0.14);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.28);
+  border-radius: 18px; padding: 22px 24px;
+  transition: all 0.3s; text-align: left;
+}
+.hero-stat:hover {
+  background: rgba(255,255,255,0.24);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.hero-stat-num {
+  font-family: var(--font); font-weight: 700;
+  font-size: 40px; color: #fff; line-height: 1;
+  letter-spacing: -2px; margin-bottom: 6px;
+}
+.hero-stat-lbl {
+  font-size: 11px; color: rgba(255,255,255,0.72);
+  text-transform: uppercase; letter-spacing: 2.5px; font-weight: 600;
+}
+.hero-icon {
+  position: absolute; font-size: 28px;
+  animation: floatIcon 3s ease-in-out infinite alternate;
+  opacity: 0.35; z-index: 2; pointer-events: none;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.15));
+}
+@keyframes floatIcon {
+  from { transform: translateY(0px) rotate(-5deg); }
+  to   { transform: translateY(-10px) rotate(5deg); }
+}
+
+/* ══════════════════════════════════
+   Q&A — DECORATIVE RIGHT PANEL
+══════════════════════════════════ */
+.qa-deco { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.qa-deco-ring {
+  position: absolute; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.12);
+  animation: pulseRing 4s ease-in-out infinite;
+}
+.qa-deco-ring-1 { width: 220px; height: 220px; top: 10%; left: 5%; animation-delay: 0s; }
+.qa-deco-ring-2 { width: 340px; height: 340px; top: 30%; left: -15%; animation-delay: 1s; }
+.qa-deco-ring-3 { width: 160px; height: 160px; top: 60%; left: 40%; animation-delay: 0.5s; }
+@keyframes pulseRing {
+  0%,100% { opacity: 0.3; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(1.04); }
+}
+.qa-icons-wrap { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.qa-float-icon {
+  position: absolute; font-size: 32px;
+  animation: floatIcon 3.5s ease-in-out infinite alternate;
+  opacity: 0.4; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.15));
+}
+
+.qa-center-card {
+  position: absolute; top: 50%; left: 50%; transform: translate(-40%, -50%);
+  background: rgba(255,255,255,0.14);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.28);
+  border-radius: 20px; padding: 28px 30px;
+  width: 260px; z-index: 4;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+}
+.qa-center-logo {
+  font-family: var(--font); font-weight: 700; font-size: 26px;
+  color: #fff; letter-spacing: -1px; margin-bottom: 16px;
+}
+.qa-center-logo span { color: rgba(255,255,255,0.65); }
+.qa-center-divider { height: 1px; background: rgba(255,255,255,0.2); margin-bottom: 16px; }
+.qa-center-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 12px; color: rgba(255,255,255,0.82); line-height: 1.5;
+  margin-bottom: 10px; font-weight: 500;
+}
+.qa-center-item:last-child { margin-bottom: 0; }
+.qa-ci-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+/* ══════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════ */
+@media (max-width: 900px) {
+  .slide-body { padding: 68px 24px 40px; }
+  .slide-2col, .slide-3col, .slide-4col { grid-template-columns: 1fr; }
+  .cs-problems { grid-template-columns: 1fr 1fr; }
+  .roadmap-phases { grid-template-columns: 1fr 1fr; }
+  .section-title { font-size: 22px !important; }
+  .salary-hero__img, .salary-cta__right { display: none; }
+  .salary-hero__desc { max-width: 100%; padding: 80px 40px; }
+  .salary-cta__left { padding: 80px 40px; }
+}
+@media (max-width: 600px) {
+  .slide-body { padding: 64px 16px 32px; }
+  .cs-problems, .roadmap-phases { grid-template-columns: 1fr; }
+  .nav-dots { display: none; }
+  .cover-h1 { font-size: 32px !important; letter-spacing: -1px; }
+  .cta-h2 { font-size: 36px !important; letter-spacing: -1px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ FIXED NAV ══ -->
+<nav class="nav">
+  <div class="nav-logo">bir<span>bank</span></div>
+  <div class="nav-dots" id="nd"></div>
+  <div class="nav-ctr" id="ctr">01 / 16</div>
+</nav>
+<button class="arr l" id="pb" disabled>&#8592;</button>
+<button class="arr r" id="nb">&#8594;</button>
+<div class="progress" id="pg" style="width:6.25%"></div>
+
+<!-- ══════════════════════════════════════
+     SLIDES
+══════════════════════════════════════ -->
+<div class="slides-wrapper">
+
+<!-- ════ S1 COVER — salary-hero layout ════ -->
+<section class="slide active" id="s1">
+  <div class="salary-hero">
+    <div class="salary-hero__desc">
+      <div class="cover-pill">Ecosystem HR Operating Model</div>
+      <h1 class="cover-h1">HR <em>Operations</em> &amp; HR <em>Systems</em></h1>
+      <p class="cover-sub">Unified People Operations Framework for the Bir Ecosystem</p>
+      <div class="cover-chips">
+        <span class="chip r">8,000 Employees</span>
+        <span class="chip">Birbank</span>
+        <span class="chip">Pashapay</span>
+        <span class="chip">Competo</span>
+      </div>
+      <div class="cover-footer">Prepared by Head of Labor Relations &amp; HR Operations</div>
+    </div>
+    <div class="salary-hero__img">
+      <div class="salary-hero__img-dots"></div>
+      <!-- KPI stats grid -->
+      <div class="hero-stats-grid">
+        <div class="hero-stat">
+          <div class="hero-stat-num">8,000+</div>
+          <div class="hero-stat-lbl">Employees</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">3</div>
+          <div class="hero-stat-lbl">Companies</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">1</div>
+          <div class="hero-stat-lbl">HR Platform</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">4</div>
+          <div class="hero-stat-lbl">HR Functions</div>
+        </div>
+      </div>
+      <!-- floating icons background -->
+      <div class="hero-icon" style="top:10%;left:8%;animation-delay:0s;font-size:38px;opacity:0.22">👥</div>
+      <div class="hero-icon" style="top:30%;left:62%;animation-delay:.6s;font-size:44px;opacity:0.18">🗄️</div>
+      <div class="hero-icon" style="top:68%;left:14%;animation-delay:1s;font-size:36px;opacity:0.2">💰</div>
+      <div class="hero-icon" style="top:14%;left:74%;animation-delay:.3s;font-size:32px;opacity:0.18">⚖️</div>
+      <div class="hero-icon" style="top:82%;left:58%;animation-delay:.8s;font-size:40px;opacity:0.2">📊</div>
+      <div class="hero-icon" style="top:52%;left:30%;animation-delay:.4s;font-size:30px;opacity:0.16">🔗</div>
+      <!-- large wordmark -->
+      <div class="salary-hero__img-wordmark">bir</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ S2 CHALLENGE ════ -->
+<section class="slide" id="s2">
+  <div class="slide-body">
+    <div class="fu"><div class="section-label">Current Situation</div><h2 class="section-title">Ecosystem <span class="r">Challenge</span></h2></div>
+    <div class="slide-2col fu">
+      <ul class="bir-list">
+        <li>3 independent company structures</li>
+        <li>Different HR processes per entity</li>
+        <li>Different HR systems</li>
+        <li>Fragmented employee data</li>
+        <li>Manual payroll preparation</li>
+        <li>Limited system integration</li>
+      </ul>
+      <div>
+        <div class="eco-block b1"><span>🏦 Birbank</span><span class="eco-sub">Separate system</span></div>
+        <div class="eco-sep">✕ NO CONNECTION</div>
+        <div class="eco-block b2"><span>💳 Pashapay</span><span class="eco-sub">Separate system</span></div>
+        <div class="eco-sep">✕ NO CONNECTION</div>
+        <div class="eco-block b3"><span>🛒 Competo</span><span class="eco-sub">Separate system</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ S3 CURRENT STATE ════ -->
+<section class="slide" id="s3">
+  <div class="slide-body">
+    <div class="fu"><div class="section-label">System Landscape</div><h2 class="section-title">Current <span class="r">State</span></h2></div>
+    <div class="fu">
+      <div class="slide-3col" style="margin-bottom:16px">
+        <div class="bir-card" style="padding:22px 16px;text-align:center">
+          <div style="font-size:30px;margin-bottom:10px">🏦</div>
+          <div style="font-weight:700;font-size:13px;margin-bottom:4px">Birbank HR System</div>
+          <div style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:1.5px">Separate Platform</div>
+        </div>
+        <div class="bir-card" style="padding:22px 16px;text-align:center">
+          <div style="font-size:30px;margin-bottom:10px">💳</div>
+          <div style="font-weight:700;font-size:13px;margin-bottom:4px">Pashapay HR System</div>
+          <div style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:1.5px">Separate Platform</div>
+        </div>
+        <div class="bir-card" style="padding:22px 16px;text-align:center">
+          <div style="font-size:30px;margin-bottom:10px">🛒</div>
+          <div style="font-weight:700;font-size:13px;margin-bottom:4px">Competo HR System</div>
+          <div style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:1.5px">Separate Platform</div>
+        </div>
+      </div>
+      <div class="no-conn">⚠ No Connection Between Systems</div>
+      <div class="cs-problems">
+        <div class="cs-problem">Duplicate employee data</div>
+        <div class="cs-problem">Different HR processes</div>
+        <div class="cs-problem">Inconsistent reporting</div>
+        <div class="cs-problem">Payroll complexity</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ S4 GLOBAL MODEL ════ -->
+<section class="slide" id="s4">
+  <div class="slide-body" style="align-items:center">
+    <div class="fu" style="text-align:center;width:100%;margin-bottom:28px">
+      <div class="section-label" style="justify-content:center">Best Practice</div>
+      <h2 class="section-title" style="margin-bottom:0">Global HR <span class="r">Operating Model</span></h2>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;width:100%;max-width:900px;margin:0 auto" class="fu">
+      <div class="gm-top">CHRO</div>
+      <div class="gm-vline"></div>
+      <div class="gm-hbar"><div class="gm-hbar-mid"></div></div>
+      <div class="slide-3col" style="width:100%;margin-top:26px">
+        <div class="bir-card gm-child"><div class="gm-child-t">HR Business Partners</div><div class="gm-child-d">Strategic HR advisory and support for business units</div></div>
+        <div class="bir-card gm-child"><div class="gm-child-t">HR Centers of Excellence</div><div class="gm-child-d">Talent management, L&amp;D, Compensation &amp; Culture</div></div>
+        <div class="bir-card gm-child"><div class="gm-child-t">HR Operations</div><div class="gm-child-d">Operational processes, HRIS, Labor relations</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ S5 PROPOSED STRUCTURE ════ -->
+<section class="slide" id="s5">
+  <div class="slide-body">
+    <div class="fu"><div class="section-label">Structure Design</div><h2 class="section-title">Proposed <span class="r">HR Structure</span></h2></div>
+    <div style="display:flex;flex-direction:column;align-items:center;width:100%" class="fu">
+      <div class="org-head">HR Operations & Service Delivery &amp; <div class="org-head-sub">Ecosystem HR Operations</div></div>
+      <div class="gm-vline" style="height:40px"></div>
+      <div class="slide-4col" style="width:100%">
+        <div class="bir-card org-child"><div class="org-tooltip">Management of employment relations, labor law compliance, and disciplinary processes</div><span class="org-child-icon">⚖️</span><div class="org-child-name">Labor Relations</div><div class="org-child-sub">Employment law &amp; compliance</div></div>
+        <div class="bir-card org-child"><div class="org-tooltip">Employee lifecycle management, documentation, leave processes, and requests</div><span class="org-child-icon">👥</span><div class="org-child-name">HR Operations</div><div class="org-child-sub">Employee lifecycle management</div></div>
+        <div class="bir-card org-child"><div class="org-tooltip">Payroll data preparation, employee data validation, and payroll system integration</div><span class="org-child-icon">💰</span><div class="org-child-name">Pre-Payroll</div><div class="org-child-sub">Payroll preparation &amp; validation</div></div>
+        <div class="bir-card org-child"><div class="org-tooltip">HR system management, data model design, integrations, and system changes</div><span class="org-child-icon">🖥️</span><div class="org-child-name">HRIS</div><div class="org-child-sub">System governance &amp; integration</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ S6 HR OPS SCOPE ════ -->
+<section class="slide" id="s6">
+  <div class="slide-body">
+    <div class="fu"><div class="section-label">Functional Scope</div><h2 class="section-title">HR Operations <span class="r">Scope</span></h2></div>
+    <ul class="acc fu">
+      <li class="acc-item on">
+        <div class="acc-head" onclick="tAcc(this)"><div class="acc-title"><span>🔄</span> Employee Lifecycle</div><div class="acc-chevron">▼</div></div>
+        <div class="acc-body"><div class="acc-inner"><span class="acc-tag">Onboarding</span><span class="acc-tag">Internal Transfers</span><span class="acc-tag">Promotions</span><span class="acc-tag">Exit Processes</span><span class="acc-tag">Role Changes</span></div></div>
+      </li>
+      <li class="acc-item">
+        <div class="acc-head" onclick="tAcc(this)"><div class="acc-title"><span>📋</span> HR Documentation</div><div class="acc-chevron">▼</div></div>
+        <div class="acc-body"><div class="acc-inner"><span class="acc-tag">Contracts</span><span class="acc-tag">Employee Files</span><span class="acc-tag">HR Records</span><span class="acc-tag">Archiving</span></div></div>
+      </li>
+      <li class="acc-item">
+        <div class="acc-head" onclick="tAcc(this)"><div class="acc-title"><span>⚙️</span> Operations Processes</div><div class="acc-chevron">▼</div></div>
+        <div class="acc-body"><div class="acc-inner"><span class="acc-tag">Leave Management</span><span class="acc-tag">Employee Requests</span><span class="acc-tag">HR Records Admin</span><span class="acc-tag">Compliance Monitoring</span></div></div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ════ S7 HRIS SCOPE ════ -->
+<section class="slide" id="s7">
+  <div class="slide-body">
+    <div class="fu"><div class="section-label">System Modules</div><h2 class="section-title">HRIS <span class="r">Scope</span></h2></div>
+    <div class="slide-3col fu">
+      <div class="bir-card hris-card"><span class="hris-card-icon">🗄️</span><div class="hris-card-title">Core HR</div><ul class="hris-card-list"><li>Employee master data</li><li>Organization structure</li><li>Position management</li><li>Reporting &amp; Analytics</li></ul></div>
+      <div class="bir-card hris-card"><span class="hris-card-icon">💵</span><div class="hris-card-title">Payroll Integration</div><ul class="hris-card-list"><li>Payroll data inputs</li><li>Payroll validation</li><li>System integration</li><li>Processing workflows</li></ul></div>
+      <div class="bir-card hris-card"><span class="hris-card-icon">🔒</span><div class="hris-card-title">System Governance</div><ul class="hris-card-list"><li>System configuration</li><li>Vendor management</li><li>Change management</li><li>User access &amp; permissions</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ S8 SYSTEM LANDSCAPE ════ -->
+<section class="slide" id="s8">
+  <div class="slide-body">
+    <div class="fu"><div class="section-label">Technical Architecture</div><h2 class="section-title">HR System <span class="r">Landscape</span></h2></div>
+    <div class="slide-3col fu spl" style="max-width:900px;margin:0 auto;width:100%;overflow:visible">
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div class="sys-badge r">HR Operations Owns</div>
+        <div class="sys-node r">🗄️ Core HRIS<div class="sys-popup">Employee master data, org structure, position management — HR Operations is business owner</div></div>
+        <div class="sys-vline"></div>
+        <div class="sys-leaves">
+          <div class="sys-leaf">💵 Payroll<div class="sys-popup">Payroll calculations and processing</div></div>
+          <div class="sys-leaf">⏱️ Time<div class="sys-popup">Attendance, working hours, leave</div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div class="sys-badge a">Independent</div>
+        <div class="sys-node a">🛠️ HR Tech<div class="sys-popup">ATS &amp; LMS — independently managed, not under HRIS scope</div></div>
+        <div class="sys-vline"></div>
+        <div class="sys-leaves">
+          <div class="sys-leaf">👤 ATS<div class="sys-popup">Applicant tracking — Talent Acquisition owns</div></div>
+          <div class="sys-leaf">📚 LMS<div class="sys-popup">Learning management — L&amp;D owns</div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div class="sys-badge b">Independent</div>
+        <div class="sys-node b">📊 HR Data / BI<div class="sys-popup">People analytics — consumes HRIS data, independently managed</div></div>
+        <div class="sys-vline"></div>
+        <div class="sys-leaves">
+          <div class="sys-leaf">📈 Analytics<div class="sys-popup">Workforce analytics and predictive insights</div></div>
+          <div class="sys-leaf">🎯 Dashboards<div class="sys-popup">Real-time HR KPI dashboards</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="fu" style="text-align:center;margin-top:18px;font-size:11px;color:var(--text-3);letter-spacing:1.5px;text-transform:uppercase">
+      HRIS is the system of record · HR Tech &amp; HR Data/BI are independent pillars
+    </div>
+  </div>
+</section>
+
+<!-- ════ S9 GOVERNANCE ════ -->
+<section class="slide" id="s9">
+  <div class="slide-body" style="align-items:center">
+    <div class="fu" style="text-align:center;width:100%;margin-bottom:28px">
+      <div class="section-label" style="justify-content:center">Accountability Structure</div>
+      <h2 class="section-title" style="text-align:center;margin-bottom:0">Governance <span class="r">Model</span></h2>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;max-width:460px;width:100%;margin:0 auto" class="fu">
+      <div class="gov-node t"><div class="gov-node-t">HR Operations</div><div class="gov-node-s">Business Owner</div></div>
+      <div class="gov-arr"><div class="gov-arr-line"></div><span style="font-size:11px">▼</span></div>
+      <div class="gov-node m"><div class="gov-node-t r">HRIS</div><div class="gov-node-s">System Owner</div></div>
+      <div class="gov-arr"><div class="gov-arr-line"></div><span style="font-size:11px">▼</span></div>
+      <div class="gov-node b"><div class="gov-node-t">Information Technology</div><div class="gov-node-s">Technical Owner</div></div>
+      <div class="gov-desc">HR Operations defines business requirements · HRIS manages system configuration · IT ensures technical infrastructure and security</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ S10 ROADMAP ════ -->
+<section class="slide" id="s10">
+  <div class="slide-body">
+    <div class="fu"><div class="section-label">Implementation Plan</div><h2 class="section-title">Execution <span class="r">Roadmap</span></h2></div>
+    <div class="roadmap-wrap fu">
+      <div class="roadmap-line"><div class="roadmap-fill"></div></div>
+      <div class="roadmap-phases" id="rmps">
+        <div class="rp" style="transition-delay:.1s"><div class="roadmap-dot"></div><div class="rp-card"><div class="rp-num">Phase 01</div><div class="rp-title">Process Harmonization</div><div class="rp-desc">Standardizing HR processes and documentation across all entities</div></div></div>
+        <div class="rp" style="transition-delay:.25s"><div class="roadmap-dot"></div><div class="rp-card"><div class="rp-num">Phase 02</div><div class="rp-title">HR Data Model Design</div><div class="rp-desc">Building a unified employee data structure across the ecosystem</div></div></div>
+        <div class="rp" style="transition-delay:.4s"><div class="roadmap-dot"></div><div class="rp-card"><div class="rp-num">Phase 03</div><div class="rp-title">System Consolidation</div><div class="rp-desc">Merging and integrating HRIS platforms into a single solution</div></div></div>
+        <div class="rp" style="transition-delay:.55s"><div class="roadmap-dot"></div><div class="rp-card"><div class="rp-num">Phase 04</div><div class="rp-title">HR Automation &amp; Analytics</div><div class="rp-desc">Advanced reporting, AI-driven insights, and employee self-service</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ S11 BENEFITS ════ -->
+<section class="slide" id="s11">
+  <div class="slide-body">
+    <div class="fu"><div class="section-label">Value Creation</div><h2 class="section-title">Key <span class="r">Benefits</span></h2></div>
+    <div class="slide-3col fu">
+      <div class="bir-card benefit-item"><div class="benefit-check">✔</div><div><div class="benefit-t">Unified HR Systems</div><div class="benefit-s">Single consolidated platform across the ecosystem</div></div></div>
+      <div class="bir-card benefit-item"><div class="benefit-check">✔</div><div><div class="benefit-t">Standardized HR Processes</div><div class="benefit-s">Consistent workflows across all three companies</div></div></div>
+      <div class="bir-card benefit-item"><div class="benefit-check">✔</div><div><div class="benefit-t">Faster HR Operations</div><div class="benefit-s">Time savings through automated processes</div></div></div>
+      <div class="bir-card benefit-item"><div class="benefit-check">✔</div><div><div class="benefit-t">Accurate Payroll Processing</div><div class="benefit-s">Elimination of manual data entry errors</div></div></div>
+      <div class="bir-card benefit-item"><div class="benefit-check">✔</div><div><div class="benefit-t">Better HR Analytics</div><div class="benefit-s">Real-time management dashboards &amp; insights</div></div></div>
+      <div class="bir-card benefit-item"><div class="benefit-check">✔</div><div><div class="benefit-t">Improved Data Governance</div><div class="benefit-s">Single source of truth for employee data</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ S12 CASE STUDIES ════ -->
+<section class="slide" id="s12">
+  <div class="slide-body">
+    <div class="fu"><div class="section-label">Global Evidence</div><h2 class="section-title">Ecosystem Companies: <span class="r">HRIS Placement Examples</span></h2></div>
+    <div class="slide-3col fu">
+      <div class="bir-card ev-card" style="padding:22px 20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div class="ev-logo" style="background:#EFF6FF;color:#1A56D6">N</div>
+          <div><div class="ev-name">Nubank</div><div class="ev-region">Brazil · LatAm · Fintech</div></div>
+        </div>
+        <div class="ev-body">After 2022 restructuring, HRIS sits under <strong>People Operations</strong> — a sub-team of People &amp; Culture. HR processes and systems owned together. HR Tech managed separately.</div>
+        <span class="bir-tag">Under: People Operations</span>
+      </div>
+      <div class="bir-card ev-card" style="padding:22px 20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div class="ev-logo" style="background:#EDFAF3;color:#0D8A4E">S</div>
+          <div><div class="ev-name">Sber Ecosystem</div><div class="ev-region">Russia · 280,000+ employees</div></div>
+        </div>
+        <div class="ev-body">Created <strong>SberSolutions</strong> — centralized HR Shared Services entity. HRIS placed under HR Operations &amp; Shared Services. IT is technical partner only.</div>
+        <span class="bir-tag">Under: HR Shared Services</span>
+      </div>
+      <div class="bir-card ev-card" style="padding:22px 20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div class="ev-logo" style="background:#FFF8EB;color:#C47B00">G</div>
+          <div><div class="ev-name">GoTo (Gojek + Tokopedia)</div><div class="ev-region">Indonesia · SE Asia · Super App</div></div>
+        </div>
+        <div class="ev-body">Built <strong>People Services &amp; Operations</strong> post-merger. HRIS specialists sit within this team, reporting to Head of People Operations.</div>
+        <span class="bir-tag">Under: People Services &amp; Ops</span>
+      </div>
+      <div class="bir-card ev-card" style="padding:22px 20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div class="ev-logo" style="background:#FFF8EB;color:#C47B00">K</div>
+          <div><div class="ev-name">Kaspi.kz</div><div class="ev-region">Kazakhstan · Bank + Market + Pay</div></div>
+        </div>
+        <div class="ev-body">Closest ecosystem analogy to Bir. HRIS sits under <strong>HR Operations</strong> serving all three business lines — bank, marketplace, and payments.</div>
+        <span class="bir-tag">Under: HR Operations (shared)</span>
+      </div>
+      <div class="bir-card ev-card" style="padding:22px 20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div class="ev-logo" style="background:#F5F3FF;color:#6D28D9">T</div>
+          <div><div class="ev-name">T-Bank (Tinkoff)</div><div class="ev-region">Russia · Finance + Lifestyle</div></div>
+        </div>
+        <div class="ev-body">HRIS placed under <strong>HR Operations &amp; Service Delivery</strong>. Owns system requirements, config, user access across all business units.</div>
+        <span class="bir-tag">Under: HR Ops &amp; Service Delivery</span>
+      </div>
+      <div class="bir-card ev-card" style="padding:22px 20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div class="ev-logo" style="background:#EDFAF3;color:#0D8A4E">G</div>
+          <div><div class="ev-name">Grab Super App</div><div class="ev-region">Singapore · SE Asia · 8 countries</div></div>
+        </div>
+        <div class="ev-body">Separates HR Tech (ATS, LMS) from Core HRIS. HRIS sits under <strong>People Ops &amp; Shared Services</strong>. Mirrors proposed structure exactly.</div>
+        <span class="bir-tag">Under: People Ops &amp; Shared Services</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ S13 LITERATURE ════ -->
+<section class="slide" id="s13">
+  <div class="slide-body">
+    <div class="fu"><div class="section-label">Academic &amp; Industry Evidence</div><h2 class="section-title">Literature &amp; Framework <span class="r">Support</span></h2></div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px" class="fu">
+      <div class="bir-card lit-card"><div class="lit-src">Dave Ulrich — HR Model (1997, updated 2005)</div><div class="lit-q">In the functional HR operating model, the operations manager takes on responsibilities related to payroll, HRIS, and self-service. HRIS sits within HR Operations as an enabler of administrative excellence.</div><div class="lit-ref">Source: AIHR — 5 Types of HR Operating Models</div></div>
+      <div class="bir-card lit-card"><div class="lit-src">CIPD — Future HR Operating Models (2024)</div><div class="lit-q">McKinsey identifies an emerging archetype: HR Operations &amp; Service Delivery — including shared services, HR technology, and talent data — as a single unified function.</div><div class="lit-ref">Source: CIPD Thought Leadership Report, 2024</div></div>
+      <div class="bir-card lit-card"><div class="lit-src">Wowledge — HR Shared Services Best Practice (2025)</div><div class="lit-q">HR technology management — including HRIS, LMS, ATS, and employee listening tools — is a core competency of high-performing HR Shared Services, not an IT function.</div><div class="lit-ref">Source: Wowledge, High-Performance HR Shared Services, 2025</div></div>
+      <div class="bir-card lit-card"><div class="lit-src">Talent Strategy Group — HR Operating Model (2023)</div><div class="lit-q">HRIS reporting more frequently to Shared Services and HR Operations than to the CHRO — a clear trend of embedding systems expertise within operational HR.</div><div class="lit-ref">Source: Talent Strategy Group, 200+ companies, 2023</div></div>
+      <div class="bir-card lit-card"><div class="lit-src">SIA Partners — HRIS Target Operating Model</div><div class="lit-q">The HRIS TOM must balance HR and IT ownership, with HR Operations as business owner defining requirements, and HRIS as the system owner. IT remains technical support only.</div><div class="lit-ref">Source: SIA Partners Consulting, HRIS TOM Framework</div></div>
+      <div class="bir-card lit-card"><div class="lit-src">SHRM / Gartner — HR Structure Research (2025)</div><div class="lit-q">72% of HR professionals report rigid structures are a barrier to talent retention. Modern HR departments embed HRIS expertise within HR Operations to ensure process ownership and data integrity.</div><div class="lit-ref">Source: SHRM Research Synthesis, 2026</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ S14 SCOPE TABLE ════ -->
+<section class="slide" id="s14">
+  <div class="slide-body">
+    <div class="fu"><div class="section-label">Scope Boundaries</div><h2 class="section-title">HRIS Scope: <span class="r">In / Out / Adjacent</span></h2></div>
+    <div class="fu" style="overflow-x:auto">
+      <table class="scope-table">
+        <thead><tr><th>Capability</th><th>HRIS Scope</th><th>HR Tech (sep.)</th><th>HR Data/BI (sep.)</th><th>IT Layer</th></tr></thead>
+        <tbody>
+          <tr><td>Employee Master Data</td><td><span class="sc-y">✔ Core</span></td><td><span class="sc-n">—</span></td><td><span class="sc-n">—</span></td><td><span class="sc-n">—</span></td></tr>
+          <tr><td>Org Structure &amp; Position Mgmt</td><td><span class="sc-y">✔ Core</span></td><td><span class="sc-n">—</span></td><td><span class="sc-n">—</span></td><td><span class="sc-n">—</span></td></tr>
+          <tr><td>Payroll Data Inputs &amp; Validation</td><td><span class="sc-y">✔ Core</span></td><td><span class="sc-n">—</span></td><td><span class="sc-n">—</span></td><td><span class="sc-n">—</span></td></tr>
+          <tr><td>System Config &amp; Governance</td><td><span class="sc-y">✔ Core</span></td><td><span class="sc-n">—</span></td><td><span class="sc-n">—</span></td><td><span class="sc-p">⚡ Support only</span></td></tr>
+          <tr><td>Applicant Tracking (ATS)</td><td><span class="sc-n">—</span></td><td><span class="sc-y">✔ HR Tech owns</span></td><td><span class="sc-n">—</span></td><td><span class="sc-n">—</span></td></tr>
+          <tr><td>Learning Management (LMS)</td><td><span class="sc-n">—</span></td><td><span class="sc-y">✔ HR Tech owns</span></td><td><span class="sc-n">—</span></td><td><span class="sc-n">—</span></td></tr>
+          <tr><td>People Analytics &amp; Dashboards</td><td><span class="sc-p">⚡ Data feed</span></td><td><span class="sc-n">—</span></td><td><span class="sc-y">✔ HR Data owns</span></td><td><span class="sc-n">—</span></td></tr>
+          <tr><td>Infrastructure &amp; Security</td><td><span class="sc-n">—</span></td><td><span class="sc-n">—</span></td><td><span class="sc-n">—</span></td><td><span class="sc-y">✔ IT owns</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="scope-note fu">HR Tech &amp; HR Data being independent does not reduce HRIS scope — it <strong>clarifies</strong> it. HRIS remains the system of record and operational backbone of all people data.</div>
+  </div>
+</section>
+
+<!-- ════ S15 PROS vs CONS ════ -->
+<section class="slide" id="s15">
+  <div class="slide-body">
+    <div class="fu"><div class="section-label">Strategic Analysis</div><h2 class="section-title">HRIS Inside HR Operations: <span class="r">Pros vs Cons</span></h2></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px" class="fu">
+      <div class="pc-col pro">
+        <div class="pc-head pro">✔ Pros <span class="pc-badge pro">7 points</span></div>
+        <div class="pc-item"><span class="pc-score pro">+2</span><span><strong>Direct process alignment.</strong> HRIS serves HR Operations daily — onboarding, transfers, payroll. Business and system owner in one team = zero translation loss.</span></div>
+        <div class="pc-item"><span class="pc-score pro">+2</span><span><strong>Faster change implementation.</strong> Config changes requested, approved, executed within the same function — no bottlenecks.</span></div>
+        <div class="pc-item"><span class="pc-score pro">+1</span><span><strong>Data quality accountability.</strong> Team that enters and uses data governs its quality. Cleaner data → accurate payroll → better analytics.</span></div>
+        <div class="pc-item"><span class="pc-score pro">+1</span><span><strong>Global best practice.</strong> Nubank, Kaspi, GoTo, Grab, Tinkoff, Sber — all place HRIS within HR Operations or equivalent People Ops.</span></div>
+        <div class="pc-item"><span class="pc-score pro">+1</span><span><strong>Ecosystem consolidation lever.</strong> Merging 3 HR systems requires one business owner. HR Ops has the cross-entity authority.</span></div>
+      </div>
+      <div class="pc-col con">
+        <div class="pc-head con">✗ Cons <span class="pc-badge con">3 points</span></div>
+        <div class="pc-item"><span class="pc-score con">−1</span><span><strong>Leadership complexity.</strong> One head covers labor relations, ops, pre-payroll, and HRIS. <em style="color:#999">Mitigated: dedicated HRIS sub-team with clear reporting lines.</em></span></div>
+        <div class="pc-item"><span class="pc-score con">−1</span><span><strong>Technical depth risk.</strong> Requires HRIS specialists with both HR and tech skills. <em style="color:#999">Mitigated: IT retains infrastructure ownership.</em></span></div>
+        <div class="pc-item"><span class="pc-score con">−1</span><span><strong>Perception of over-concentration.</strong> Some may view the mandate as too broad. <em style="color:#999">Mitigated: standard model in 5K–10K employee organizations globally.</em></span></div>
+      </div>
+    </div>
+    <div class="score-box fu">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:1px;text-transform:uppercase">Verdict</span>
+        <div style="display:flex;gap:14px;font-weight:700;font-size:13px">
+          <span style="color:var(--green)">Pros: 7</span><span style="color:var(--border)">vs</span><span style="color:var(--red)">Cons: 3</span>
+        </div>
+      </div>
+      <div class="score-bar-bg"><div class="score-bar-fill"></div></div>
+      <div class="score-verdict">HRIS inside HR Operations scores <strong>70% favorable</strong> — pros are structurally stronger and each con has a clear mitigation path.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ S16 Q&A — salary-cta layout ════ -->
+<section class="slide" id="s16">
+  <div class="salary-cta">
+    <div class="salary-cta__left">
+      <div class="cta-eyebrow">Bir Ecosystem · HR Operating Model</div>
+      <div class="cta-h2">Questions &amp;<br><em>Discussion</em></div>
+      <div class="cta-sub">Thank you for your attention</div>
+      <div class="cta-logo">bir<span>bank</span> | HR</div>
+    </div>
+    <div class="salary-cta__right">
+      <div class="salary-cta__right-dots"></div>
+      <!-- decorative elements -->
+      <div class="qa-deco">
+        <div class="qa-deco-ring qa-deco-ring-1"></div>
+        <div class="qa-deco-ring qa-deco-ring-2"></div>
+        <div class="qa-deco-ring qa-deco-ring-3"></div>
+      </div>
+      <div class="qa-center-card">
+        <div class="qa-center-logo">bir<span>bank</span></div>
+        <div class="qa-center-divider"></div>
+        <div class="qa-center-item"><span class="qa-ci-icon">👤</span><span>Head of HR Operations &amp; HR Systems</span></div>
+        <div class="qa-center-item"><span class="qa-ci-icon">🏢</span><span>Bir Ecosystem · Birbank · Pashapay · Competo</span></div>
+        <div class="qa-center-item"><span class="qa-ci-icon">👥</span><span>8,000+ Employees</span></div>
+      </div>
+      <div class="qa-icons-wrap">
+        <div class="qa-float-icon" style="top:8%;left:12%;animation-delay:0s;font-size:28px;opacity:0.25">💬</div>
+        <div class="qa-float-icon" style="top:80%;left:55%;animation-delay:.5s;font-size:32px;opacity:0.22">🤝</div>
+        <div class="qa-float-icon" style="top:72%;left:18%;animation-delay:.9s;font-size:24px;opacity:0.2">💡</div>
+        <div class="qa-float-icon" style="top:12%;left:70%;animation-delay:.3s;font-size:26px;opacity:0.22">📋</div>
+        <div class="qa-float-icon" style="top:88%;left:80%;animation-delay:.7s;font-size:22px;opacity:0.18">✅</div>
+      </div>
+      <div class="salary-cta__right-mark">bir</div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /slides-wrapper -->
+
+<!-- global tooltip overlay — fixed position, bypasses overflow:hidden -->
+<div id="global-tip"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const N = 16;
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  slides.forEach((s, i) => {
+    s.classList.remove('active','ai-r','ai-l','ao-l','ao-r');
+    if (i === 0) s.classList.add('active');
+  });
+  let cur = 0;
+
+  /* nav dots */
+  const nd = document.getElementById('nd');
+  for (let i = 0; i < N; i++) {
+    const d = document.createElement('div');
+    d.className = 'nav-dot' + (i === 0 ? ' on' : '');
+    d.addEventListener('click', () => go(i));
+    nd.appendChild(d);
+  }
+
+  function ui() {
+    document.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('on', i === cur));
+    document.getElementById('ctr').textContent = String(cur+1).padStart(2,'0') + ' / ' + String(N).padStart(2,'0');
+    document.getElementById('pg').style.width = ((cur+1)/N*100) + '%';
+    document.getElementById('pb').disabled = cur === 0;
+    document.getElementById('nb').disabled = cur === N-1;
+    if (cur === 9) setTimeout(() => document.querySelectorAll('.rp').forEach(p => p.classList.add('v')), 350);
+  }
+
+  function go(next) {
+    if (next < 0 || next >= N || next === cur) return;
+    const prev = cur, fwd = next > prev;
+    const out = slides[prev], inn = slides[next];
+    slides.forEach(s => s.classList.remove('ao-l','ao-r','ai-r','ai-l'));
+    inn.classList.add(fwd ? 'ai-r' : 'ai-l');
+    void inn.offsetWidth;
+    out.classList.add(fwd ? 'ao-l' : 'ao-r');
+    inn.classList.remove('ai-r','ai-l');
+    inn.classList.add('active');
+    cur = next; ui();
+    setTimeout(() => out.classList.remove('active','ao-l','ao-r'), 600);
+  }
+
+  document.getElementById('pb').addEventListener('click', () => go(cur-1));
+  document.getElementById('nb').addEventListener('click', () => go(cur+1));
+  document.addEventListener('keydown', e => {
+    if (e.key==='ArrowRight'||e.key==='ArrowDown') go(cur+1);
+    if (e.key==='ArrowLeft'||e.key==='ArrowUp') go(cur-1);
+  });
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50) go(cur + (dx<0?1:-1)); });
+  ui();
+});
+
+function tAcc(h) {
+  const item = h.parentElement, isOpen = item.classList.contains('on');
+  document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('on'));
+  if (!isOpen) item.classList.add('on');
+}
+
+/* ── Global tooltip that escapes overflow:hidden ── */
+(function(){
+  const tip = document.getElementById('global-tip');
+  let hideTimer;
+
+  function showTip(el, evt) {
+    const popup = el.querySelector('.sys-popup, .org-tooltip');
+    if (!popup) return;
+    const text = popup.textContent.trim();
+    if (!text) return;
+    clearTimeout(hideTimer);
+    tip.textContent = text;
+    tip.classList.add('show');
+    moveTip(evt);
+  }
+
+  function moveTip(evt) {
+    const x = evt.clientX, y = evt.clientY;
+    const tw = 200, th = 80;
+    let left = x + 14;
+    let top  = y - th / 2;
+    if (left + tw > window.innerWidth - 8) left = x - tw - 14;
+    if (top < 8) top = 8;
+    if (top + th > window.innerHeight - 8) top = window.innerHeight - th - 8;
+    tip.style.left = left + 'px';
+    tip.style.top  = top  + 'px';
+  }
+
+  function hideTip() {
+    hideTimer = setTimeout(() => tip.classList.remove('show'), 80);
+  }
+
+  // Attach to sys-node, sys-leaf, org-child
+  document.addEventListener('mouseover', function(e) {
+    const el = e.target.closest('.sys-node, .sys-leaf, .org-child');
+    if (el) showTip(el, e);
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (tip.classList.contains('show')) moveTip(e);
+  });
+  document.addEventListener('mouseout', function(e) {
+    const el = e.target.closest('.sys-node, .sys-leaf, .org-child');
+    if (el) hideTip();
+  });
+})();
+</script>
+</body>
+</html>
